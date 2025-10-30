@@ -20,14 +20,21 @@ uint16_t Header::getType() const {
 }
 
 void Header::setW(uint16_t w) {
+    uint8_t mask = 0b11111000;
+    w = w & mask;
+    buffer[0] = buffer[0] & (~mask);
 
+    // shift left to position 3
+    uint16_t shifted_bit = w << 3;
+    
+    buffer[0] = buffer[0] | shifted_bit;
 }
 
 uint16_t Header::getW() const {
-
-    return 0;
+    uint16_t window = buffer[0] & 0b11111000;
+    window = window >> 3;
+    return window;
 }
-
 
 void Header::setSeq(uint16_t seq) {
 

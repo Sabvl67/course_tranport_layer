@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <array>
 
 using namespace std;
 class Header {
@@ -17,6 +18,7 @@ class Header {
     void setType(uint16_t t);
     uint16_t getType() const;
 
+    // w is b3-b7, simialr to type but we need to shift after bitwise as it start at b3
     void setW(uint16_t w);
     uint16_t getW() const;
 
@@ -28,7 +30,6 @@ class Header {
 
     void setCRC(uint16_t c);
     uint16_t getCRC() const;
-
 
 };
 
