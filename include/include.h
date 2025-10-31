@@ -28,8 +28,8 @@ class Header {
     void setLength(uint16_t l);
     uint16_t getLength() const;
 
-    void setCRC(uint16_t c);
-    uint16_t getCRC() const;
+    void setCRC(uint32_t c);
+    uint32_t getCRC() const;
 
 };
 

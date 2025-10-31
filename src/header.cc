@@ -37,30 +37,37 @@ uint16_t Header::getW() const {
 }
 
 void Header::setSeq(uint16_t seq) {
-
+    uint16_t mask = 0b11111111;
+    seq = seq & mask;
+    buffer[1] = seq;
 }
 
 uint16_t Header::getSeq() const {
-
-    return 0;
+    return buffer[1];
 }
 
 
 void Header::setLength(uint16_t l) {
-
+    buffer[2] = l & 0xFF;
+    buffer[3] = (l >> 8) & 0xFF;
 }
 
 uint16_t Header::getLength() const {
-
-    return 0;
+    return buffer[2] | (buffer[3] << 8);
 }
 
 
-void Header::setCRC(uint16_t c) {
-
+void Header::setCRC(uint32_t c) {
+    buffer[8] = c & 0xFF;
+    buffer[9] = (c >> 8) & 0xFF;
+    buffer[10] = (c >> 16) & 0xFF;
+    buffer[11] = (c >> 24) & 0xFF;
 }
 
-uint16_t Header::getCRC() const {
+uint32_t Header::getCRC() const {
+    return static_cast<uint32_t> (buffer[8])|
+            (static_cast<uint32_t>(buffer[9]) << 8)|
+            (static_cast<uint32_t>(buffer[10]) << 16)|
+            (static_cast<uint32_t>(buffer[11]) << 24);
 
-    return 0;
 }
