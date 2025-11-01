@@ -1,4 +1,5 @@
 // add include files for your classes and components
+#include "include.h"
 
 // the test driver function prototypes
 #include "header_driver_t.h"
@@ -7,9 +8,12 @@
 
 // given <buffer> that holds <buf_size> bytes, set the TYPE field to the value <value>.
 // <value> can be 0, 1, 2, or 3.
-// MAke sure that no oher bits in the buffer are changed
+// Make sure that no other bits in the buffer are changed
 void setType_t(unsigned char *buffer, int buf_size, unsigned int value) {
-
+	if (!buffer || buf_size <=0) return;
+	uint8_t bits = 0b00000011;
+	value = (value & 0x03) << 6;
+	buffer[0] = (buffer[0] & ~bits) | value;
 }
 
 // returns the value of field Window from <buffer> which has size <buf_size> bytes.
