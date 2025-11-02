@@ -1,67 +1,78 @@
-// add include files for your classes and components
-
-// the test driver function prototypes
 #include "header_driver_t.h"
+#include <cstddef>   // for size_t
+#include <cstdint>   // for uint32_t, uint16_t
 
-// Implement the test driver functions so that all tests pass.
-
-// given <buffer> that holds <buf_size> bytes, set the TYPE field to the value <value>.
-// <value> can be 0, 1, 2, or 3.
-// MAke sure that no oher bits in the buffer are changed
+// ------------------------------------------------------------
+// TYPE FIELD (2 bits: bits 7–6 of buffer[0])
+// ------------------------------------------------------------
 void setType_t(unsigned char *buffer, int buf_size, unsigned int value) {
-
+    if (buf_size < 1) return;
+    value &= 0x03; // only keep 2 bits
+    buffer[0] = (buffer[0] & ~0xC0) | (value << 6);
 }
 
-// returns the value of field Window from <buffer> which has size <buf_size> bytes.
-// This value can only be 0, 1, 2, or 3.
 unsigned int getType_t(unsigned char *buffer, int buf_size) {
-	return 0;
+    if (buf_size < 1) return 0;
+    return (buffer[0] & 0xC0) >> 6;
 }
 
-// given <buffer> that holds <buf_size> bytes, set the Window field to the value <value>.
-// <value> can be 0-31
-// MAke sure that no oher bits in the buffer are changed
+// ------------------------------------------------------------
+// WINDOW FIELD (5 bits: bits 5–1 of buffer[0])
+// ------------------------------------------------------------
 void setWin_t(unsigned char *buffer, int buf_size, unsigned int value) {
+    if (buf_size < 1) return;
+    value &= 0x1F; // only 5 bits
+    buffer[0] = (buffer[0] & ~0x3E) | ((value << 1) & 0x3E);
 }
 
-// returns the value of field Window from <buffer> which has size <buf_size> bytes.
-// This value can only be 0-31
 unsigned int getWin_t(unsigned char *buffer, int buf_size) {
-	return 0;
+    if (buf_size < 1) return 0;
+    return (buffer[0] & 0x3E) >> 1;
 }
 
-// given <buffer> that holds <buf_size> bytes, set the Seq num field to the value <value>.
-// <value> can be 0-255
-// MAke sure that no oher bits in the buffer are changed
+// ------------------------------------------------------------
+// SEQUENCE FIELD (8 bits: buffer[1])
+// ------------------------------------------------------------
 void setSeq_t(unsigned char *buffer, int buf_size, unsigned int value) {
+    if (buf_size < 2) return;
+    buffer[1] = static_cast<unsigned char>(value & 0xFF);
 }
 
-// returns the value of field Seq from <buffer> which has size <buf_size> bytes.
-// This value can only be 0-255
 unsigned int getSeq_t(unsigned char *buffer, int buf_size) {
-	return 0;
+    if (buf_size < 2) return 0;
+    return static_cast<unsigned int>(buffer[1]);
 }
 
-// given <buffer> that holds <buf_size> bytes, set the Length field to the value <value>.
-// <value> can be 0-65535
-// MAke sure that no oher bits in the buffer are changed
+// ------------------------------------------------------------
+// LENGTH FIELD (16 bits: buffer[2] = MSB, buffer[3] = LSB)
+// ------------------------------------------------------------
 void setLen_t(unsigned char *buffer, int buf_size, unsigned int value) {
+    if (buf_size < 4) return;
+    buffer[2] = static_cast<unsigned char>((value >> 8) & 0xFF); // high byte
+    buffer[3] = static_cast<unsigned char>(value & 0xFF);        // low byte
 }
 
-// returns the value of field Length from <buffer> which has size <buf_size> bytes.
-// This value can only be 0-65535
 unsigned int getLen_t(unsigned char *buffer, int buf_size) {
-	return 0;
+    if (buf_size < 4) return 0;
+    return (static_cast<unsigned int>(buffer[2]) << 8) |
+           (static_cast<unsigned int>(buffer[3]));
 }
 
-// given <buffer> that holds <buf_size> bytes, set the CRC1 field to the value <value>.
-// <value> can be 0 .. 2^32-1=4294967295
-// MAke sure that no oher bits in the buffer are changed
+// ------------------------------------------------------------
+// CRC1 FIELD (32 bits: buffer[8]..buffer[11], big-endian)
+// ------------------------------------------------------------
 void setCRC1_t(unsigned char *buffer, int buf_size, unsigned long int value) {
+    if (buf_size < 12) return;
+    buffer[8]  = static_cast<unsigned char>((value >> 24) & 0xFF);
+    buffer[9]  = static_cast<unsigned char>((value >> 16) & 0xFF);
+    buffer[10] = static_cast<unsigned char>((value >> 8)  & 0xFF);
+    buffer[11] = static_cast<unsigned char>(value & 0xFF);
 }
 
-// returns the value of field CRC1 from <buffer> which has size <buf_size> bytes.
-// This value can only be 0 .. 4294967295
 unsigned long int getCRC1_t(unsigned char *buffer, int buf_size) {
-	return 0;
+    if (buf_size < 12) return 0;
+    return (static_cast<unsigned long int>(buffer[8])  << 24) |
+           (static_cast<unsigned long int>(buffer[9])  << 16) |
+           (static_cast<unsigned long int>(buffer[10]) << 8)  |
+           (static_cast<unsigned long int>(buffer[11]));
 }
