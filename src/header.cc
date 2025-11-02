@@ -20,13 +20,13 @@ uint16_t Header::getType() const {
 }
 
 void Header::setW(uint16_t w) {
-    uint8_t mask = 0b11111000;
+    uint8_t mask = 0b00011111;
     w = w & mask;
-    buffer[0] = buffer[0] & (~mask);
+    buffer[0] = buffer[0] & 0b00000111;  // Keep only bits 0-2 (Type and T bit)
 
     // shift left to position 3
     uint16_t shifted_bit = w << 3;
-    
+
     buffer[0] = buffer[0] | shifted_bit;
 }
 
@@ -69,5 +69,4 @@ uint32_t Header::getCRC() const {
             (static_cast<uint32_t>(buffer[9]) << 8)|
             (static_cast<uint32_t>(buffer[10]) << 16)|
             (static_cast<uint32_t>(buffer[11]) << 24);
-
 }
