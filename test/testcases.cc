@@ -39,7 +39,7 @@ TEST_F(ExtraHeadersTest, WindowOutOfRangeMasked) {
     EXPECT_EQ(getWin_t(buffer, SIZE), 31u);
 }
 
-// ---- Seq num ----
+// Tests for Seq num
 TEST_F(ExtraHeadersTest, SeqBoundaryValues) {
     setSeq_t(buffer, SIZE, 0);
     EXPECT_EQ(getSeq_t(buffer, SIZE), 0u);
