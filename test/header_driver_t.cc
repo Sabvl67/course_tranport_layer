@@ -10,28 +10,32 @@
 // <value> can be 0, 1, 2, or 3.
 // Make sure that no other bits in the buffer are changed
 void setType_t(unsigned char *buffer, int buf_size, unsigned int value) {
-	if (!buffer || buf_size <=0) return;
-	uint8_t bits = 0b00000011;
-	value = (value & 0x03) << 6;
-	buffer[0] = (buffer[0] & ~bits) | value;
+	if (!buffer || buf_size < 1) return 0;
+	value = ((value & 0x03) << 6);
+	buffer[0] = ((buffer[0] & 0x3F) | value);
 }
 
 // returns the value of field Window from <buffer> which has size <buf_size> bytes.
 // This value can only be 0, 1, 2, or 3.
-unsigned int getType_t(unsigned char *buffer, int buf_size) {
-	return 0;
+unsigned int getType_t(const unsigned char *buffer, int buf_size) {
+	if (!buffer || bufsize < 1) return 0;
+    return (buffer[0] >> 6) & 0x03;
 }
 
 // given <buffer> that holds <buf_size> bytes, set the Window field to the value <value>.
 // <value> can be 0-31
 // MAke sure that no oher bits in the buffer are changed
 void setWin_t(unsigned char *buffer, int buf_size, unsigned int value) {
+    if (!buffer || buf_size < 1) return;
+    value = value & 0x1F;
+    buffer[0] = (buffer[0] & 0xE0) | value;
 }
 
 // returns the value of field Window from <buffer> which has size <buf_size> bytes.
 // This value can only be 0-31
 unsigned int getWin_t(unsigned char *buffer, int buf_size) {
-	return 0;
+	if (!buffer || buf_size < 1) return 0;
+    return buffer[0] & 0x1F;
 }
 
 // given <buffer> that holds <buf_size> bytes, set the Seq num field to the value <value>.
