@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 #include "header_driver_t.h"
 
+// Extra possible test for boundary/overflow masking for all fields
+// buffer-integrity (“no bleed”) checks and safety on nullptr / small buffers
+
 class ExtraHeadersTest : public ::testing::Test {
 protected:
     static const int SIZE = 12;
