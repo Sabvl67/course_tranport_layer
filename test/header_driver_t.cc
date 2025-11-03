@@ -1,78 +1,88 @@
+#include "include.h"
+// the test driver function prototypes
 #include "header_driver_t.h"
-#include <cstddef>   // for size_t
-#include <cstdint>   // for uint32_t, uint16_t
 
-// ------------------------------------------------------------
-// TYPE FIELD (2 bits: bits 7–6 of buffer[0])
-// ------------------------------------------------------------
+// Implement the test driver functions so that all tests pass.
+// These are wrapper functions that use the Header class from src/header.cc
+
+// given <buffer> that holds <buf_size> bytes, set the TYPE field to the value <value>.
+// <value> can be 0, 1, 2, or 3.
+// MAke sure that no oher bits in the buffer are changed
 void setType_t(unsigned char *buffer, int buf_size, unsigned int value) {
-    if (buf_size < 1) return;
-    value &= 0x03; // only keep 2 bits
-    buffer[0] = (buffer[0] & ~0xC0) | (value << 6);
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    header.setType_t(value);
+    header.writeToBuffer(buffer, buf_size);
 }
 
+// returns the value of field Type from <buffer> which has size <buf_size> bytes.
+// This value can only be 0, 1, 2, or 3.
 unsigned int getType_t(unsigned char *buffer, int buf_size) {
-    if (buf_size < 1) return 0;
-    return (buffer[0] & 0xC0) >> 6;
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    return header.getType_t();
 }
 
-// ------------------------------------------------------------
-// WINDOW FIELD (5 bits: bits 5–1 of buffer[0])
-// ------------------------------------------------------------
+// given <buffer> that holds <buf_size> bytes, set the Window field to the value <value>.
+// <value> can be 0-31
+// MAke sure that no oher bits in the buffer are changed
 void setWin_t(unsigned char *buffer, int buf_size, unsigned int value) {
-    if (buf_size < 1) return;
-    value &= 0x1F; // only 5 bits
-    buffer[0] = (buffer[0] & ~0x3E) | ((value << 1) & 0x3E);
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    header.setWin_t(value);
+    header.writeToBuffer(buffer, buf_size);
 }
 
 unsigned int getWin_t(unsigned char *buffer, int buf_size) {
-    if (buf_size < 1) return 0;
-    return (buffer[0] & 0x3E) >> 1;
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    return header.getWin_t();
 }
 
-// ------------------------------------------------------------
-// SEQUENCE FIELD (8 bits: buffer[1])
-// ------------------------------------------------------------
+// given <buffer> that holds <buf_size> bytes, set the Seq num field to the value <value>.
+// <value> can be 0-255
+// MAke sure that no oher bits in the buffer are changed
 void setSeq_t(unsigned char *buffer, int buf_size, unsigned int value) {
-    if (buf_size < 2) return;
-    buffer[1] = static_cast<unsigned char>(value & 0xFF);
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    header.setSeq_t(value);
+    header.writeToBuffer(buffer, buf_size);
 }
 
 unsigned int getSeq_t(unsigned char *buffer, int buf_size) {
-    if (buf_size < 2) return 0;
-    return static_cast<unsigned int>(buffer[1]);
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    return header.getSeq_t();
 }
 
-// ------------------------------------------------------------
-// LENGTH FIELD (16 bits: buffer[2] = MSB, buffer[3] = LSB)
-// ------------------------------------------------------------
+// given <buffer> that holds <buf_size> bytes, set the Length field to the value <value>.
+// <value> can be 0-65535
+// MAke sure that no oher bits in the buffer are changed
 void setLen_t(unsigned char *buffer, int buf_size, unsigned int value) {
-    if (buf_size < 4) return;
-    buffer[2] = static_cast<unsigned char>((value >> 8) & 0xFF); // high byte
-    buffer[3] = static_cast<unsigned char>(value & 0xFF);        // low byte
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    header.setLen_t(value);
+    header.writeToBuffer(buffer, buf_size);
 }
 
 unsigned int getLen_t(unsigned char *buffer, int buf_size) {
-    if (buf_size < 4) return 0;
-    return (static_cast<unsigned int>(buffer[2]) << 8) |
-           (static_cast<unsigned int>(buffer[3]));
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    return header.getLen_t();
 }
 
-// ------------------------------------------------------------
-// CRC1 FIELD (32 bits: buffer[8]..buffer[11], big-endian)
-// ------------------------------------------------------------
+// given <buffer> that holds <buf_size> bytes, set the CRC1 field to the value <value>.
+// <value> can be 0 .. 2^32-1=4294967295
+// MAke sure that no oher bits in the buffer are changed
 void setCRC1_t(unsigned char *buffer, int buf_size, unsigned long int value) {
-    if (buf_size < 12) return;
-    buffer[8]  = static_cast<unsigned char>((value >> 24) & 0xFF);
-    buffer[9]  = static_cast<unsigned char>((value >> 16) & 0xFF);
-    buffer[10] = static_cast<unsigned char>((value >> 8)  & 0xFF);
-    buffer[11] = static_cast<unsigned char>(value & 0xFF);
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    header.setCRC1_t(value);
+    header.writeToBuffer(buffer, buf_size);
 }
 
 unsigned long int getCRC1_t(unsigned char *buffer, int buf_size) {
-    if (buf_size < 12) return 0;
-    return (static_cast<unsigned long int>(buffer[8])  << 24) |
-           (static_cast<unsigned long int>(buffer[9])  << 16) |
-           (static_cast<unsigned long int>(buffer[10]) << 8)  |
-           (static_cast<unsigned long int>(buffer[11]));
+    Header header;
+    header.loadFromBuffer(buffer, buf_size);
+    return header.getCRC1_t();
 }
