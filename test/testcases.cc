@@ -11,7 +11,7 @@ protected:
     }
 };
 
-// ---- Type field ----
+// Tests for Type field
 TEST_F(ExtraHeadersTest, TypeBoundaryValues) {
     setType_t(buffer, SIZE, 0);
     EXPECT_EQ(getType_t(buffer, SIZE), 0u);
@@ -25,7 +25,7 @@ TEST_F(ExtraHeadersTest, TypeOutOfRangeMasked) {
     EXPECT_EQ(getType_t(buffer, SIZE), 3u); // only 2 bits kept
 }
 
-// ---- Window field ----
+// Tests for Window field
 TEST_F(ExtraHeadersTest, WindowBoundaryValues) {
     setWin_t(buffer, SIZE, 0);
     EXPECT_EQ(getWin_t(buffer, SIZE), 0u);
@@ -53,7 +53,7 @@ TEST_F(ExtraHeadersTest, SeqOutOfRangeMasked) {
     EXPECT_EQ(getSeq_t(buffer, SIZE), 0u); // only low 8 bits kept
 }
 
-// ---- Length ----
+// Tests for Length
 TEST_F(ExtraHeadersTest, LengthBoundaryValues) {
     setLen_t(buffer, SIZE, 0);
     EXPECT_EQ(getLen_t(buffer, SIZE), 0u);
@@ -67,7 +67,7 @@ TEST_F(ExtraHeadersTest, LengthOutOfRangeMasked) {
     EXPECT_EQ(getLen_t(buffer, SIZE), 4464u); // 70000 mod 65536
 }
 
-// ---- CRC1 ----
+// Tests for CRC1
 TEST_F(ExtraHeadersTest, CRC1BoundaryValues) {
     setCRC1_t(buffer, SIZE, 0);
     EXPECT_EQ(getCRC1_t(buffer, SIZE), 0u);
@@ -81,7 +81,7 @@ TEST_F(ExtraHeadersTest, CRC1OutOfRangeMasked) {
     EXPECT_EQ(getCRC1_t(buffer, SIZE), 0xFFFFFFFFu); // truncated
 }
 
-// ---- Buffer integrity ----
+// Tests for Buffer integrity
 TEST_F(ExtraHeadersTest, OnlyTouchesExpectedBytes) {
     // Save original pattern
     unsigned char before[SIZE];
@@ -99,7 +99,7 @@ TEST_F(ExtraHeadersTest, OnlyTouchesExpectedBytes) {
     }
 }
 
-// ---- Small buffer safety ----
+// Tests for Small buffer safety
 TEST(ExtraHeadersSafety, NullBufferDoesNotCrash) {
     setType_t(nullptr, 0, 2);
     EXPECT_EQ(getType_t(nullptr, 0), 0u);
