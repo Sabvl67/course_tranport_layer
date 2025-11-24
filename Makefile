@@ -2,9 +2,10 @@
 # Compiler and flags
 # =============================
 CXX       := g++
-CXXFLAGS  := -Wall -O2 -MMD -MP
+CXXFLAGS  := -std=c++17 -Wall -O2 -MMD -MP
 LDFLAGS   := -lX11
-CXX_INC   := -Iinclude -Itest
+CXX_INC   := -Iinclude -Itest -I/opt/homebrew/opt/googletest/include
+GTEST_LIB := -L/opt/homebrew/opt/googletest/lib
 
 # =============================
 # Directories
@@ -22,6 +23,10 @@ TARGETS   :=
 # Find all .cc files in src/ (excluding test sources)
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cc)
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.cc,$(BUILD_DIR)/%.o,$(SRC_FILES))
+
+# For tests, exclude main.cc
+TEST_SRC_FILES := $(filter-out $(SRC_DIR)/main.cc,$(SRC_FILES))
+TEST_SRC_OBJ := $(patsubst $(SRC_DIR)/%.cc,$(BUILD_DIR)/%.o,$(TEST_SRC_FILES))
 
 # Find all test .cc files
 TEST_FILES := $(wildcard $(TEST_DIR)/*.cc)
@@ -53,8 +58,8 @@ $(BUILD_DIR)/test_%.o: $(TEST_DIR)/%.cc | $(BUILD_DIR)
 # =============================
 test: $(TEST_BIN)
 
-$(TEST_BIN): $(TEST_OBJ) $(OBJ_FILES)
-	$(CXX) $^ -o $@ -lgtest -lgtest_main -pthread $(LDFLAGS)
+$(TEST_BIN): $(TEST_OBJ) $(TEST_SRC_OBJ)
+	$(CXX) $^ -o $@ $(GTEST_LIB) -lgtest -lgtest_main -pthread
 
 # =============================
 # Include dependency files
