@@ -33,8 +33,6 @@ void setWin_t(unsigned char *buffer, int buf_size, unsigned int value) {
     header.writeToBuffer(buffer, buf_size);
 }
 
-// returns the value of field Window from <buffer> which has size <buf_size> bytes.
-// This value can only be 0-31
 unsigned int getWin_t(unsigned char *buffer, int buf_size) {
     Header header;
     header.loadFromBuffer(buffer, buf_size);
@@ -51,8 +49,6 @@ void setSeq_t(unsigned char *buffer, int buf_size, unsigned int value) {
     header.writeToBuffer(buffer, buf_size);
 }
 
-// returns the value of field Seq from <buffer> which has size <buf_size> bytes.
-// This value can only be 0-255
 unsigned int getSeq_t(unsigned char *buffer, int buf_size) {
     Header header;
     header.loadFromBuffer(buffer, buf_size);
@@ -69,8 +65,6 @@ void setLen_t(unsigned char *buffer, int buf_size, unsigned int value) {
     header.writeToBuffer(buffer, buf_size);
 }
 
-// returns the value of field Length from <buffer> which has size <buf_size> bytes.
-// This value can only be 0-65535
 unsigned int getLen_t(unsigned char *buffer, int buf_size) {
     Header header;
     header.loadFromBuffer(buffer, buf_size);
@@ -87,8 +81,6 @@ void setCRC1_t(unsigned char *buffer, int buf_size, unsigned long int value) {
     header.writeToBuffer(buffer, buf_size);
 }
 
-// returns the value of field CRC1 from <buffer> which has size <buf_size> bytes.
-// This value can only be 0 .. 4294967295
 unsigned long int getCRC1_t(unsigned char *buffer, int buf_size) {
     Header header;
     header.loadFromBuffer(buffer, buf_size);

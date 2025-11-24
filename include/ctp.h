@@ -36,7 +36,31 @@ bool parse_and_verify_ack(
     uint8_t& out_seqnum
 );
 
+// Parse and verify a DATA packet received from sender.
+//  - Returns true on success, false on error (bad type, CRC mismatch, etc.).
+bool parse_and_verify_data(
+    const uint8_t* buffer,
+    std::size_t length,
+    uint8_t& out_type,
+    uint8_t& out_window,
+    uint8_t& out_seqnum,
+    uint16_t& out_payload_len,
+    const uint8_t*& out_payload
+);
+
+// Build a CTP ACK packet.
+//  - Returns total packet length (12 bytes), or 0 on error.
+std::size_t build_ctp_ack_packet(
+    uint8_t* out_buffer,
+    std::size_t out_capacity,
+    uint8_t seqnum,
+    uint8_t window = 1
+);
+
 // The main sender routine to be called from main().
 int run_sender(int argc, char* argv[]);
+
+// The main receiver routine to be called from main().
+int run_receiver(int argc, char* argv[]);
 
 #endif // CTP_H
