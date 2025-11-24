@@ -1,32 +1,8 @@
 # Lab Machine Testing Checklist
-
-## Before Going to Lab
-
-- [x] CTP sender implementation complete
-- [x] CTP receiver implementation complete
-- [x] Code compiles without errors
-- [x] Testing guide prepared
-- [ ] Have USB drive or way to transfer files to lab machine
-
 ---
 
 ## At the Lab - Step by Step
 
-### 1. Initial Setup (5-10 min)
-
-- [ ] Log into lab machine (student0.cs.uleth.ca or similar)
-- [ ] Create working directory: `mkdir ~/ctp_project && cd ~/ctp_project`
-- [ ] Transfer your code to lab machine
-  ```bash
-  # Option A: Git (if you have repo)
-  git clone <your-repo-url>
-
-  # Option B: SCP from another machine
-  scp -r /path/to/code username@student0.cs.uleth.ca:~/ctp_project/
-
-  # Option C: USB drive
-  cp -r /media/usb/course_tranport_layer/* ~/ctp_project/
-  ```
 
 ### 2. Find Reference Implementation (5 min)
 
