@@ -1,6 +1,18 @@
 # Project Assigment Checklist
 
-## ✅
+## Command
+# BUILD COMMANDS
+make sender          # Compile sender
+make receiver        # Compile receiver  
+make                 # Compile both
+make clean           # Remove binaries
+
+# RUN COMMANDS
+./ctp_sender -f test.txt localhost 5000
+./ctp_receiver 5000 output.txt
+
+# ONE-LINER
+make clean && make sender && ./ctp_sender -f test.txt localhost 5000
 
 ### 1. Code Implementation ✅ COMPLETE
 - ✅ CTP sender ([src/ctp.cc])
@@ -91,22 +103,3 @@ course_tranport_layer/
 ├── Makefile             
 └── README.md            ✅ Documentation
 ```
-
-
-## 🎓 Final Checklist
-
-Before submission:
-- [ ] Run `./test_with_reference.sh` on Linux
-- [ ] All 5 tests pass (IPv4 + IPv6)
-- [ ] Code compiles without warnings
-- [ ] Command line arguments work: `-f filename host port`
-- [ ] Files in src/ and include/ only
-- [ ] Code is commented appropriately
-- [ ] README explains your implementation
-
-Once all checked:
-- [ ] Create tarball: `tar czf submission.tar.gz src/ include/`
-- [ ] Test extraction: `tar xzf submission.tar.gz && ls`
-- [ ] Submit to course portal
-
-

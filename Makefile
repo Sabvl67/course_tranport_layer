@@ -2,8 +2,8 @@
 # Compiler and flags
 # =============================
 CXX       := g++
-CXXFLAGS  := -std=c++17 -Wall -O2 -MMD -MP
-LDFLAGS   := -lX11
+CXXFLAGS  := -std=c++17 -Wall -O2 -MMD -MP -I.
+LDFLAGS   := -lz
 CXX_INC   := -Iinclude -Itest -I/opt/homebrew/opt/googletest/include
 GTEST_LIB := -L/opt/homebrew/opt/googletest/lib
 
@@ -16,9 +16,12 @@ BUILD_DIR := build
 
 # =============================
 # Targets and source discovery
-# Add targets once you start building the project
 # =============================
-TARGETS   := 
+TARGETS   := ctp_sender ctp_receiver
+
+# Specific executables
+SENDER    := ctp_sender
+RECEIVER  := ctp_receiver 
 
 # Find all .cc files in src/ (excluding test sources)
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cc)
@@ -41,8 +44,17 @@ all: $(TARGETS)
 # =============================
 # Link step for programs
 # =============================
-$(TARGETS):
-	$(CXX) $^ -o $@ $(LDFLAGS)
+$(SENDER): $(SRC_DIR)/sender.cc
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+	@echo "✓ Sender compiled: ./$(SENDER)"
+
+$(RECEIVER): $(SRC_DIR)/ctp_receiver.cc
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+	@echo "✓ Receiver compiled: ./$(RECEIVER)"
+
+# Convenience targets
+sender: $(SENDER)
+receiver: $(RECEIVER)
 
 # =============================
 # Compile rules
