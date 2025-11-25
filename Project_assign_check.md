@@ -2,14 +2,14 @@
 
 ## Command
 # BUILD COMMANDS
-make sender          # Compile sender
-make receiver        # Compile receiver  
-make                 # Compile both
-make clean           # Remove binaries
+- make sender
+- make receiver 
+- make
+- make clean 
 
 # RUN COMMANDS
-./ctp_sender -f test.txt localhost 5000
-./ctp_receiver 5000 output.txt
+- ./ctp_sender -f test.txt localhost 5000
+- ./ctp_receiver 5000 output.txt
 
 # ONE-LINER
 make clean && make sender && ./ctp_sender -f test.txt localhost 5000
