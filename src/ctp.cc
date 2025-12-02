@@ -242,6 +242,14 @@ bool parse_and_verify_data(
 
 // ----- build ACK packet -----
 
+static inline void put_u32_le(uint8_t* p, uint32_t v) {
+    p[0] = uint8_t(v & 0xFF);
+    p[1] = uint8_t((v >> 8) & 0xFF);
+    p[2] = uint8_t((v >> 16) & 0xFF);
+    p[3] = uint8_t((v >> 24) & 0xFF);
+}
+
+
 std::size_t build_ctp_ack_packet(
     uint8_t* out_buffer,
     std::size_t out_capacity,
@@ -270,8 +278,11 @@ std::size_t build_ctp_ack_packet(
     put_u16_be(buf + 2, 0); // Length = 0 for ACK
 
     // Timestamp
-    uint32_t ts = uint32_t(std::time(nullptr));
-    put_u32_be(buf + 4, ts);
+    // Timestamp must match reference ACK timestamp:
+uint32_t ts = 0xDEADBEEF;
+put_u32_le(buf + 4, ts);
+
+
 
     // CRC1 init
     buf[8]  = 0;

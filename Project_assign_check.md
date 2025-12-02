@@ -47,28 +47,38 @@ make clean && make sender && ./ctp_sender -f test.txt localhost 5000
 ## Test Your Sender with Reference Receiver
 
 ### IPv4 Tests (1 byte, 256 bytes, 512 bytes)
+
 ```bash
 # Terminal 1: Start reference receiver
-./reference-implementation/receiver 5001 output_1byte.txt
+./ctp_receiver 5003 out.bin
+./reference-implementation/sender -f test_files/test_1byte.bin localhost 5003
 
 # Terminal 2: Run your sender
-./ctp_sender localhost 5001 test_files/test_1byte.bin
+./reference-implementation/receiver -f output_1byte.bin localhost 5001
+./ctp_sender -f test_files/test_1byte.bin localhost 5001
 
 # Verify the output matches
-diff test_files/test_1byte.bin output_1byte.txt && echo "✅ PASS" || echo "❌ FAIL"
+diff test_files/test_1byte.bin output_1byte.bin \
+    && echo "✅ PASS" \
+    || echo "❌ FAIL"
 ```
 
 ### IPv6 Tests (1 byte, 512 bytes)
 ```bash
 # Terminal 1: Start reference receiver
-./reference-implementation/receiver 5002 output_ipv6.txt
+./reference-implementation/receiver -f output_ipv6.txt ::1 5002
 
 # Terminal 2: Run your sender with IPv6
-./ctp_sender ::1 5002 test_files/test_512bytes.bin
+./ctp_sender -f test_files/test_512bytes.bin ::1 5002
 
 # Verify the output matches
-diff test_files/test_512bytes.bin output_ipv6.txt && echo "✅ PASS" || echo "❌ FAIL"
+diff test_files/test_512bytes.bin output_ipv6.txt \
+  && echo "✅ PASS (IPv6 Sender)" \
+  || echo "❌ FAIL (IPv6 Sender)"
 ```
+
+./reference-implementation/receiver -f output_ipv6.txt ::1 5002
+
 
 ## Test Reference Sender with Your Receiver
 ```bash
