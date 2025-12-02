@@ -42,9 +42,51 @@ make clean && make sender && ./ctp_sender -f test.txt localhost 5000
 
 ### Use Lab Machine 
 
-# Test
+# Test Commands
+
+## Test Your Sender with Reference Receiver
+
+### IPv4 Tests (1 byte, 256 bytes, 512 bytes)
+```bash
+# Terminal 1: Start reference receiver
+./reference-implementation/receiver 5001 output_1byte.txt
+
+# Terminal 2: Run your sender
+./ctp_sender localhost 5001 test_files/test_1byte.bin
+
+# Verify the output matches
+diff test_files/test_1byte.bin output_1byte.txt && echo "✅ PASS" || echo "❌ FAIL"
+```
+
+### IPv6 Tests (1 byte, 512 bytes)
+```bash
+# Terminal 1: Start reference receiver
+./reference-implementation/receiver 5002 output_ipv6.txt
+
+# Terminal 2: Run your sender with IPv6
+./ctp_sender ::1 5002 test_files/test_512bytes.bin
+
+# Verify the output matches
+diff test_files/test_512bytes.bin output_ipv6.txt && echo "✅ PASS" || echo "❌ FAIL"
+```
+
+## Test Reference Sender with Your Receiver
+```bash
+# Terminal 1: Start your receiver
+./ctp_receiver 5003 output_from_ref.txt
+
+# Terminal 2: Run reference sender
+./reference-implementation/sender localhost 5003 test_files/test_256bytes.bin
+
+# Verify the output matches
+diff test_files/test_256bytes.bin output_from_ref.txt && echo "✅ PASS" || echo "❌ FAIL"
+```
+
+## Automated Testing (if test script exists)
+```bash
 cd ~/course_tranport_layer/
 ./test_with_reference.sh
+```
 
 
 ---
