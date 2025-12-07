@@ -79,6 +79,34 @@ diff test_files/test_512bytes.bin output_ipv6.txt \
 
 ./reference-implementation/receiver -f output_ipv6.txt ::1 5002
 
+### PROJECT 3 Commands
+
+## Test Reference Sender - Our Receiver (IPv6)
+
+# Terminal 1 
+./ctp_receiver -6 5004 out_ipv6.bin
+
+# Terminal 2 
+./reference-implementation/sender -f test_files/test_512bytes.bin ::1 5004
+
+# Afterwards in Terminal 2
+diff test_files/test_512bytes.bin out_ipv6.bin
+
+## Testing our Receiver (IPv6)
+
+# Terminal 1 
+
+./ctp_receiver -6 5005 out_ipv6_y2y.bin
+
+# Terminal 2 
+
+./ctp_sender -f test_files/test_512bytes.bin ::1 5005
+
+# Afterwards in Terminal 2
+
+diff test_files/test_512bytes.bin out_ipv6_y2y.bin
+
+
 
 ## Test Reference Sender with Your Receiver
 ```bash
