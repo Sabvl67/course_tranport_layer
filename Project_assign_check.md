@@ -129,6 +129,21 @@ cd ~/course_tranport_layer/
 
 ---
 
+### PROJECT 4 COMMANDS 
+
+# Terminal 1:
+
+./ctp_receiver -4 5001 out.bin
+
+# Terminal 2:
+
+./ctp_sender -f test_files/test_large.bin 127.0.0.1 5001
+
+# Terminal 1: 
+
+diff test_files/test_large.bin out.bin && echo "PASS" || echo "FAIL"
+
+
 
 ### Step 3: Review Results
 ```bash

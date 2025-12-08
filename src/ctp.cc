@@ -492,38 +492,22 @@ int run_sender(int c, char* v[]) {
     host = v[x];
     port = v[x + 1];
 
-    // --- Read data (≤512 bytes) ---
-
+    // --- Read entire file into vector<uint8_t> ---
     std::vector<uint8_t> data;
-
     if (!filename.empty()) {
-       std::ifstream in(filename, std::ios::binary);
+        std::ifstream in(filename, std::ios::binary);
         if (!in) {
             std::cerr << "Cannot open file: " << filename << "\n";
             return 1;
         }
         data.assign(std::istreambuf_iterator<char>(in),
                     std::istreambuf_iterator<char>());
-    } else {
-        // read from stdin
-        std::istreambuf_iterator<char> it(std::cin);
-        std::istreambuf_iterator<char> end;
-        for (; it != end; ++it) {
-            data.push_back( uint8_t(*it));
-        }
     }
 
-    if (data.size() > CTP_MAX_PAYLOAD) {
-        std::cerr << "Input larger than 512 bytes; not supported in Prototype 2.\n";
-        return 1;
-    }
-
-    // --- Resolve host/port and open UDP socket (IPv4 or IPv6) ---
-
-    struct addrinfo hints;
-    std::memset(&hints, 0, sizeof(hints));
-    hints.ai_family   = AF_UNSPEC;   // IPv4 or IPv6
-    hints.ai_socktype = SOCK_DGRAM;  // UDP
+    // --- Resolve host/port and open socket ---
+    struct addrinfo hints{};
+    hints.ai_family   = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
 
     struct addrinfo* results = nullptr;
     int rval = getaddrinfo(host.c_str(), port.c_str(), &hints, &results);
@@ -535,138 +519,90 @@ int run_sender(int c, char* v[]) {
     int sock = -1;
     struct addrinfo* ptr;
     for (ptr = results; ptr != nullptr; ptr = ptr->ai_next) {
-        sock = ::socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
-        if (sock != -1) {
-            break; // success
-        }
+        sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+        if (sock != -1) break;
     }
-
-    if (sock == -1 || ptr == nullptr) {
+    if (sock == -1) {
         std::cerr << "Failed to open UDP socket.\n";
         freeaddrinfo(results);
         return 3;
     }
 
-    // --- Build and send DATA packet with file contents ---
-
-    uint8_t send_buf[CTP_HEADER_LEN + CTP_MAX_PAYLOAD + 4]; // enough for payload + CRC2
+    // --- MULTI-PACKET FRAGMENTATION LOOP ---
+    uint8_t send_buf[CTP_HEADER_LEN + CTP_MAX_PAYLOAD + 4];
     uint8_t seqnum = 0;
+    size_t pos = 0;
 
-    std::size_t data_pkt_len = build_ctp_data_packet(
-        send_buf,
-        sizeof(send_buf),
-        data.empty() ? nullptr : data.data(),
-        data.size(),
-        seqnum,
-        1 // window
+    while (pos < data.size()) {
+        size_t chunk = std::min((size_t)CTP_MAX_PAYLOAD, data.size() - pos);
+
+        size_t pkt_len = build_ctp_data_packet(
+            send_buf, sizeof(send_buf),
+            &data[pos], chunk,
+            seqnum, 1
+        );
+
+        if (pkt_len == 0) {
+            std::cerr << "Failed to build DATA packet.\n";
+            freeaddrinfo(results);
+            close(sock);
+            return 4;
+        }
+
+        // Send chunk
+        ssize_t sent = sendto(sock, send_buf, pkt_len, 0,
+                              ptr->ai_addr, ptr->ai_addrlen);
+
+        if (sent < 0) {
+            perror("sendto (data)");
+            freeaddrinfo(results);
+            close(sock);
+            return 5;
+        }
+
+        // Wait for ACK
+        uint8_t recv_buf2[1024];
+        struct sockaddr_storage from_addr2;
+        socklen_t from_len2 = sizeof(from_addr2);
+
+        ssize_t recvd2 = recvfrom(sock, recv_buf2, sizeof(recv_buf2), 0,
+                                  (struct sockaddr*)&from_addr2, &from_len2);
+
+        if (recvd2 < 0) {
+            perror("recvfrom (ACK)");
+            freeaddrinfo(results);
+            close(sock);
+            return 6;
+        }
+
+        uint8_t ack_window = 0, ack_seq = 0;
+        if (!parse_and_verify_ack(recv_buf2, recvd2, ack_window, ack_seq)) {
+            std::cerr << "Invalid ACK.\n";
+            continue;
+        }
+
+        // Next chunk
+        pos += chunk;
+        seqnum = (seqnum + 1) % 256;
+    }
+
+    // --- SEND FINAL 0-LENGTH PACKET ---
+    size_t fin_len = build_ctp_data_packet(
+        send_buf, sizeof(send_buf),
+        nullptr, 0,
+        seqnum, 1
     );
 
-    if (data_pkt_len == 0) {
-        std::cerr << "Failed to build DATA packet.\n";
-        freeaddrinfo(results);
-        close(sock);
-        return 4;
-    }
+    sendto(sock, send_buf, fin_len, 0, ptr->ai_addr, ptr->ai_addrlen);
 
-    ssize_t sent = sendto(sock,
-                          send_buf,
-                          data_pkt_len,
-                          0,
-                          ptr->ai_addr,
-                          ptr->ai_addrlen);
-
-    if (sent < 0 ||  std::size_t(sent) != data_pkt_len) {
-        std::perror("sendto (data)");
-        freeaddrinfo(results);
-        close(sock);
-        return 5;
-    }
-
-    // --- Receive ACK ---
-
-    uint8_t recv_buf[1024];
-    struct sockaddr_storage from;
-    socklen_t fromlen = sizeof(from);
-
-    ssize_t recvd = recvfrom(sock,
-                             recv_buf,
-                             sizeof(recv_buf),
-                             0,
-                             reinterpret_cast<struct sockaddr*>(&from),
-                             &fromlen);
-    if (recvd < 0) {
-        std::perror("recvfrom");
-        freeaddrinfo(results);
-        close(sock);
-        return 6;
-    }
-
-    uint8_t ack_window = 0;
-    uint8_t ack_seqnum = 0;
-    if (!parse_and_verify_ack(recv_buf,
-                               std::size_t(recvd),
-                              ack_window,
-                              ack_seqnum)) {
-        std::cerr << "Failed to parse/verify ACK.\n";
-        freeaddrinfo(results);
-        close(sock);
-        return 7;
-    }
-
-    // --- Send final zero-length DATA packet to signal end-of-transfer ---
-
-    std::size_t fin_len = build_ctp_data_packet(
-        send_buf,
-        sizeof(send_buf),
-        nullptr,
-        0,            // Length
-        ack_seqnum,
-        1
-    );
-
-    if (fin_len == 0) {
-        std::cerr << "Failed to build final DATA packet.\n";
-        freeaddrinfo(results);
-        close(sock);
-        return 8;
-    }
-
-    sent = sendto(sock,
-                  send_buf,
-                  fin_len,
-                  0,
-                  ptr->ai_addr,
-                  ptr->ai_addrlen);
-    if (sent < 0 ||  std::size_t(sent) != fin_len) {
-        std::perror("sendto (final)");
-        freeaddrinfo(results);
-        close(sock);
-        return 9;
-    }
-
-    // Receive final ACK
-    recvd = recvfrom(sock,
-                     recv_buf,
-                     sizeof(recv_buf),
-                     0,
-                     reinterpret_cast<struct sockaddr*>(&from),
-                     &fromlen);
-
-    if (recvd < 0) {
-        std::perror("recvfrom (final ACK)");
-        // we'll still close and exit; at worst receiver complains
-    } else {
-        uint8_t final_window = 0;
-        uint8_t final_seq = 0;
-        // optional: ignore failure, we just want to keep the port open
-        parse_and_verify_ack(recv_buf,
-                             std::size_t(recvd),
-                             final_window,
-                             final_seq);
-    }
+    // --- Receive final ACK (optional) ---
+    uint8_t dummy_buf[1024];
+    struct sockaddr_storage dummy_addr;
+    socklen_t dummy_len = sizeof(dummy_addr);
+    recvfrom(sock, dummy_buf, sizeof(dummy_buf), 0,
+             (struct sockaddr*)&dummy_addr, &dummy_len);
 
     freeaddrinfo(results);
     close(sock);
-
     return 0;
 }
