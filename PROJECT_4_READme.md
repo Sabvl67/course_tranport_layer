@@ -1,3 +1,8 @@
+## Command
+# BUILD COMMANDS
+- make
+- make clean 
+
 ### PROJECT 4 COMMANDS
 
 ### 1. Receiver correctness with reference sender (IPv4 + IPv6)
